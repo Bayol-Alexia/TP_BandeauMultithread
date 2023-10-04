@@ -19,7 +19,7 @@ class ScenarioElement {
  * Un scenario mémorise une liste d'effets, et le nombre de repetitions pour chaque effet
  * Un scenario sait se jouer sur un bandeau.
  */
-public class Scenario {
+public class Scenario extends Thread {
 
     private final List<ScenarioElement> myElements = new LinkedList<>();
 
@@ -29,7 +29,7 @@ public class Scenario {
      * @param e l'effet à ajouter
      * @param repeats le nombre de répétitions pour cet effet
      */
-    public void addEffect(Effect e, int repeats) {
+    void addEffect(Effect e, int repeats) {
         myElements.add(new ScenarioElement(e, repeats));
     }
 
@@ -38,11 +38,18 @@ public class Scenario {
      *
      * @param b le bandeau ou s'afficher.
      */
-    public void playOn(Bandeau b) {
-        for (ScenarioElement element : myElements) {
-            for (int repeats = 0; repeats < element.repeats; repeats++) {
-                element.effect.playOn(b);
+
+    void playOn(Bandeau b) {
+        Thread t = new Thread(){
+            public void run(){
+                synchronized (b){
+                    for (ScenarioElement element : myElements) {
+                        for (int repeats = 0; repeats < element.repeats; repeats++) {
+                            element.effect.playOn(b);
+                        }
+                    }
+                }
             }
-        }
+        }; t.start();
     }
 }
